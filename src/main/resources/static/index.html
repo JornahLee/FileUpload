@@ -2,25 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>File Upload</title>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
 </head>
 <body>
 
-<form action="opus/upload" method="post" enctype="multipart/form-data">
-    <h1 align="center">交作业了</h1>
-    <table align="center" border="1px">
-        <tr>
-            <td ><input type='file' name="file"></td>
-        </tr>
-        <tr>
-            <td align="center"><input type="submit"/></td>
-        </tr>
+<h1 align="center">交作业了</h1>
+<table align="center" border="1px">
+    <tr>
+        <td><input type="file" name="file" id="file"></td>
+    </tr>
+    <tr>
+        <td align="center">
+            <button id="upload" onClick="upload()">upload</button>
+        </td>
+    </tr>
+</table>
 
-    </table>
+<script type="text/javascript">
+    var blockSize = 1024 * 1024; // 每个文件切片大小定为1MB .
+    var chunks;
+    //发送请求
+    function upload() {
+        var blob = document.getElementById("file").files[0];
+        var start = 0;
+        var end;
+        var index = 0;
+        var fileSize = blob.size;
+        var fileName = blob.name;
+        //     String fileMd5,
+        //     Integer chunk,
+        //     MultipartFile blockFile) throws IOException {
+        //计算文件切片总数
+        chunks = Math.ceil(fileSize / blockSize);
+        while (start < fileSize) {
+            end = start + blockSize;
+            if (end > fileSize) {
+                end = fileSize;
+            }
 
-    　
-    　　
-    　　
+            var chunk = blob.slice(start, end);//切割文件
+            var sliceIndex = blob.name + index;
+            var formData = new FormData();
+            formData.append("file", chunk, fileName);
+            $.ajax({
+                url: 'http://localhost:1011/uploadBlock',
+                type: 'POST',
+                cache: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+            }).done(function (res) {
+                document.write("chunk:" +chunk);
+
+            }).fail(function (res) {
+
+            });
+            start = end;
+            index++;
+        }
+    }
+</script>
+　
+　　
+　　
 
 </form>
 </body>

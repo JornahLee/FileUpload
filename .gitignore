@@ -10,7 +10,7 @@
 # Compiled class file
 *.class
 */target
-
+target/*
 # IDEA 
 logs
 .idea

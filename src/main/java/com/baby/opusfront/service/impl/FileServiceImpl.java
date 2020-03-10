@@ -5,6 +5,7 @@ import com.baby.opusfront.dao.FileDao;
 import com.baby.opusfront.model.MyFile;
 import com.baby.opusfront.service.FileService;
 import com.baby.opusfront.util.FileUtil;
+import com.baby.opusfront.util.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,60 +14,66 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class FileServiceImpl implements FileService {
 
-    @Value("file.rootPath")
+    @Value("${file.rootPath}")
     private String rootPath;
 
-    @Value("file.pathLevel")
-    private int pathLevel;
+    @Value("${file.pathLevel}")
+    private Integer pathLevel;
 
     @Autowired
     private FileDao fileDao;
 
     @Override
     public Boolean isUploaded(String md5) {
-        return null;
+        return false;
     }
 
     @Override
-    public String uploadBlock(String fileMd5, Long blockSize, Long fileSize, Integer chunks, Integer chunk, MultipartFile blockFile) {
-
-        MyFile newFile = new MyFile();
-        newFile.setFileName(blockFile.getOriginalFilename());
-        newFile.setFileSize(fileSize);
-        newFile.setStatusCd(0);
-        newFile.setUploadDt(new Date());
-        newFile.setSuffix(FileUtil.getFileSuffix(blockFile.getOriginalFilename()));
-        try {
-            String fileId = UUID.randomUUID().toString();
+    public String uploadBlock(String fileName, String fileMd5, Long blockSize, Long fileSize, Integer chunks, Integer chunk, MultipartFile blockFile) {
+        MyFile myFile = fileDao.getFile(fileMd5);
+        if (myFile == null) {
+            myFile=new MyFile();
+            myFile.setMd5(fileMd5);
             String path = FileUtil.generatePath(fileMd5, rootPath, pathLevel);
-            String fileName = path +
+            myFile.setPath(path);
+            myFile.setFileType(FileUtil.getFileSuffix(fileName));
+            String physicFileName = path +
                     File.separator +
-                    newFile.getFileId() +
-                    newFile.getSuffix();
-            FileUtil.writeFileBlock(fileName, fileSize, blockSize, chunk, blockFile);
-            Integer chunkCount = FileUtil.chunkCount.get(fileMd5);
-            if(chunkCount==null){
-                FileUtil.chunkCount.put(fileMd5,1);
+                    myFile.getMd5() +
+                    myFile.getFileType();
+            myFile.setPhysicFileName(physicFileName);
+            myFile.setFileName(blockFile.getOriginalFilename());
+        }
+        try {
+            System.out.println("--lcg---   "+myFile.getPhysicFileName()+"     -------");
+            FileUtil.writeFileBlock(myFile.getPhysicFileName(), fileSize, blockSize, chunk, blockFile.getInputStream());
+            Set<Integer> chunkSet = FileUtil.chunkCount.get(fileMd5);
+            if (chunkSet == null) {
+                chunkSet = new HashSet<>();
+                myFile.setFileSize(fileSize);
+                FileUtil.chunkCount.put(fileMd5,chunkSet);
+                fileDao.save(myFile);
+            } else if (chunkSet.size() == chunks) {
+                myFile.setFileStatus(MyFile.UPLOAD_SUCCESS);
+                //check md5
+                String md5Verify = MD5Util.getFileMD5(new File(myFile.getFileName()));
+                if(md5Verify!=null && md5Verify.equals(fileMd5)){
+                    return "文件全部上传完成";
+                }
+                //return
             }else{
-                FileUtil.chunkCount.put(fileMd5,++chunkCount);
+                chunkSet.add(chunk);
+                myFile.setUploadDt(new Date());
+                myFile.setFileStatus(MyFile.UPLOADING);
+                fileDao.updateUploadStatus(fileMd5, myFile);
             }
-            //如何判断是否已经上传完毕？
-            if(FileUtil.chunkCount.get(fileMd5)==chunks){
-                //传输完成
-                newFile.setStatusCd(1);
-            }
-            newFile.setFileId(fileId);
-            newFile.setPath(path);
-            // 查db  得到fileId，然后在面进行追加写文件
-            MyFile myFile = fileDao.getFile(fileMd5);
-            // FileUtil.amendFile(myFile.getFileId(), myFile.getPath(), chunk, blockSize, blockFile);
-            //update blockFile Info in db
-            fileDao.save(newFile);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -81,8 +88,12 @@ public class FileServiceImpl implements FileService {
 
     public static void useRandomAccessFile() throws IOException {
         String filename = "asdas.txt";
-        String suffix = FileUtil.getFileSuffix(filename);
-        System.out.println("--licg---   suffix   : " + suffix + "    -----");
+        File file = new File(filename);
+        if(!file.exists()){
+            file.createNewFile();
+        }
+        String fileMD5 = MD5Util.getFileMD5(file);
+        System.out.println(fileMD5.length()+"::"+fileMD5);
 
     }
 }

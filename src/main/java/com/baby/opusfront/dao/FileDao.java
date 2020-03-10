@@ -11,4 +11,6 @@ public interface FileDao {
 
 
     void save(MyFile newFile);
+
+    void updateUploadStatus(String fileMd5, MyFile uploadStatus);
 }

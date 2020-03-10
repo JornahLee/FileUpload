@@ -1,7 +1,9 @@
 package com.baby.opusfront.controller;
 
 
+import com.baby.opusfront.model.MyFile;
 import com.baby.opusfront.service.FileService;
+import com.baby.opusfront.util.FileUtil;
 import com.baby.opusfront.util.ShellCaller;
 import com.baby.opusfront.util.ZipUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.UUID;
 
 @Controller
-@RequestMapping("/opus")
 public class OpusController {
 
     @Value("${baby.opus.path}")
@@ -99,17 +102,19 @@ public class OpusController {
 
     @RequestMapping("/uploadBlock")
     public String uploadBlock(
+            String fileName,
             String fileMd5,
             Long fileSize,
             Long blockSize,
             Integer chunks,
             Integer chunk,
-            MultipartFile file) throws IOException {
+            MultipartFile blockFile) throws IOException {
         //是否存在
         if (fileService.isUploaded(fileMd5)) {
-            return "文件已上传";
+            return "文件已上传完成";
         }else{
-           return  fileService.uploadBlock(fileMd5,blockSize,fileSize,chunks,chunk,file);
+
+           return  fileService.uploadBlock(fileName,fileMd5,blockSize,fileSize,chunks,chunk,blockFile);
         }
 
     }
