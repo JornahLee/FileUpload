@@ -1,6 +1,6 @@
 baby:
   opus:
-    path : /usr/jornahlee/opus-front
+    path : d:/usr/jornahlee/opus-front
 file:
   rootPath: /usr/jornahlee/opus-front
   pathLevel: 2

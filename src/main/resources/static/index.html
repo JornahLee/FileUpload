@@ -1,12 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>File Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
     <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
-</head>
-<body>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /*background-color: #333333;*/
+        }
 
+        .box {
+            width: 300px;
+            height: 8px;
+            background-color: black;
+            margin: 400px auto;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .box1 {
+            display: block;
+            width: 300px;
+            height: 4px;
+            background-color: rgb(74, 158, 238);
+            position: absolute;
+            top: 2px;
+            right: 300px;
+            z-index: 999;
+            border-radius: 5px;
+            box-shadow: 0 0 4px #fff;
+            /*transition: .5s;*/
+            /*animation: MyAnimation 0.5s linear 1 forwards;*/
+        }
+
+        /*@keyframes MyAnimation {*/
+        /*    0% {*/
+        /*        transform: translateX(0);*/
+        /*    }*/
+        /*    100% {*/
+        /*        transform: translateX(300px);*/
+        /*    }*/
+        /*}*/
+        a{
+            color: white;
+            position: absolute;
+        }
+        /*a:hover +.box .box1{*/
+        /*    transform: translateX(30px);*/
+        /*}*/
+
+    </style>
+</head>
+
+<body>
+<script type="text/javascript">
+    var blockSize = 9*1024 * 1024; // 每个文件切片大小定为1MB .
+
+    var chunks=300;
+    // background-color: rgb(74, 158, 238);
+    function to(indexxxx){
+        $(".box1").css("transform","translateX("+300*indexxxx/chunks+"px)");
+    }
+    //发送请求
+    function upload() {
+        var blob = document.getElementById("file").files[0];
+        var start = 0;
+        var end;
+        var index = 0;
+        var fileSize = blob.size;
+        var filename = blob.name;
+
+        var fileMd5=new Date().getMilliseconds();
+        //计算文件切片总数
+        chunks = Math.ceil(fileSize / blockSize);
+        while(start < fileSize) {
+            end = start + blockSize;
+            if(end > fileSize) {
+                end = fileSize;
+            }
+            var blockFile = blob.slice(start,end);//切割文件
+            var sliceIndex= blob.name + index;
+            var formData = new FormData();
+            formData.append("blockFile", blockFile);
+            formData.append("fileName", filename);
+            formData.append("chunks", chunks);
+            formData.append("fileSize", fileSize);
+            formData.append("blockSize", blockSize);
+            formData.append("chunk", index);
+            formData.append("fileMd5", fileMd5);
+
+            $.ajax({
+                url: 'http://localhost:1011/uploadBlock',
+                type: 'POST',
+                cache: false,
+                async: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+            }).done(function(res){
+
+            }).fail(function(res) {
+
+            });
+            to(index+1);
+            start = end;
+            index++;
+        }
+    }
+</script>
+
+
+<button onclick="to(30)">10%</button>
+<button onclick="to(60)">20%</button>
+<button onclick="to(90)">30%</button>
 <h1 align="center">交作业了</h1>
 <table align="center" border="1px">
     <tr>
@@ -18,55 +129,10 @@
         </td>
     </tr>
 </table>
+<div class="box">
+    <div class="box1"></div>
 
-<script type="text/javascript">
-    var blockSize = 1024 * 1024; // 每个文件切片大小定为1MB .
-    var chunks;
-    //发送请求
-    function upload() {
-        var blob = document.getElementById("file").files[0];
-        var start = 0;
-        var end;
-        var index = 0;
-        var fileSize = blob.size;
-        var fileName = blob.name;
-        //     String fileMd5,
-        //     Integer chunk,
-        //     MultipartFile blockFile) throws IOException {
-        //计算文件切片总数
-        chunks = Math.ceil(fileSize / blockSize);
-        while (start < fileSize) {
-            end = start + blockSize;
-            if (end > fileSize) {
-                end = fileSize;
-            }
-
-            var chunk = blob.slice(start, end);//切割文件
-            var sliceIndex = blob.name + index;
-            var formData = new FormData();
-            formData.append("file", chunk, fileName);
-            $.ajax({
-                url: 'http://localhost:1011/uploadBlock',
-                type: 'POST',
-                cache: false,
-                data: formData,
-                processData: false,
-                contentType: false,
-            }).done(function (res) {
-                document.write("chunk:" +chunk);
-
-            }).fail(function (res) {
-
-            });
-            start = end;
-            index++;
-        }
-    }
-</script>
-　
-　　
-　　
-
-</form>
+</div>
 </body>
+
 </html>

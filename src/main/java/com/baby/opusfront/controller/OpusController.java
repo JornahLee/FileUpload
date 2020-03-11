@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @Controller
 public class OpusController {
 
+
     @Value("${baby.opus.path}")
     private String path;
 
@@ -34,7 +36,6 @@ public class OpusController {
     public String index() {
         return "index";
     }
-
 
 
     @RequestMapping("/upload")
@@ -101,6 +102,7 @@ public class OpusController {
     }
 
     @RequestMapping("/uploadBlock")
+    @ResponseBody
     public String uploadBlock(
             String fileName,
             String fileMd5,
@@ -112,9 +114,9 @@ public class OpusController {
         //是否存在
         if (fileService.isUploaded(fileMd5)) {
             return "文件已上传完成";
-        }else{
+        } else {
 
-           return  fileService.uploadBlock(fileName,fileMd5,blockSize,fileSize,chunks,chunk,blockFile);
+            return fileService.uploadBlock(fileName, fileMd5, blockSize, fileSize, chunks, chunk, blockFile);
         }
 
     }

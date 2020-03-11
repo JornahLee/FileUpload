@@ -44,16 +44,15 @@ public class FileUtil {
             file.getParentFile().mkdirs();
             file.createNewFile();
         }
-        RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
-        randomAccessFile.setLength(fileSize);
-        randomAccessFile.seek(blockSize * chunk);
-        byte[] buff = new byte[1024];
-        int len = -1;
-        while ((len = ins.read(buff)) != -1) {
-            randomAccessFile.write(buff, 0, len);
+        try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw")){
+            randomAccessFile.setLength(fileSize);
+            randomAccessFile.seek(blockSize * chunk);
+            byte[] buff = new byte[1024];
+            int len = -1;
+            while ((len = ins.read(buff)) != -1) {
+                randomAccessFile.write(buff, 0, len);
+            }
         }
-
-
 
         return "";
     }
