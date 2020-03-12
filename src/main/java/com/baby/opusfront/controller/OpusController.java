@@ -112,6 +112,11 @@ public class OpusController {
             Integer chunk,
             MultipartFile blockFile) throws IOException {
         //是否存在
+        System.out.println("--lcg---  fileName  " + fileName + "     -------");
+        System.out.println("--lcg---  fileSize  " + fileSize + "     -------");
+        System.out.println("--lcg---  blockSize  " + blockSize + "     -------");
+        System.out.println("--lcg---  chunks  " + chunks + "     -------");
+        System.out.println("--lcg---  chunk  " + chunk + "     -------");
         if (fileService.isUploaded(fileMd5)) {
             return "文件已上传完成";
         } else {

@@ -2,7 +2,7 @@ baby:
   opus:
     path : d:/usr/jornahlee/opus-front
 file:
-  rootPath: /usr/jornahlee/opus-front
+  rootPath: d:/usr/jornahlee/opus-front
   pathLevel: 2
 server:
   port : 1011
@@ -11,6 +11,9 @@ spring:
     view:
       prefix: /
       suffix: .html
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/static/
   servlet:
     multipart:
       max-file-size: 20MB

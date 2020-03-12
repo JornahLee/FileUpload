@@ -59,9 +59,6 @@
 
 <body>
 <script type="text/javascript">
-    function to(index){
-        $(".box1").css("transform","translateX("+300*index/chunks+"px)");
-    }
     // background-color: rgb(74, 158, 238);
 
     var blockSize = 1024 * 1024; // 每个文件切片大小定为1MB .
@@ -83,7 +80,6 @@
                 end = fileSize;
             }
             var blockFile = blob.slice(start,end);//切割文件
-            var sliceIndex= blob.name + index;
             var formData = new FormData();
             var fileMd5="qwerqweqwe";
             formData.append("blockFile", blockFile);
@@ -102,7 +98,7 @@
                 processData: false,
                 contentType: false,
             }).done(function(res){
-                to(index);
+
             }).fail(function(res) {
 
             });

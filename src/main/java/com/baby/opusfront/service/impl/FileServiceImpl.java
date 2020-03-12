@@ -13,10 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -60,29 +57,30 @@ public class FileServiceImpl implements FileService {
                 myFile.setFileSize(fileSize);
                 FileUtil.chunkCount.put(fileMd5,chunkSet);
                 fileDao.save(myFile);
-            } else if (chunkSet.size() == chunks) {
+            } else if (chunkSet.size() == chunks-1) {
                 myFile.setFileStatus(MyFile.UPLOAD_SUCCESS);
                 //check md5
-                String md5Verify = MD5Util.getFileMD5(new File(myFile.getFileName()));
+                String md5Verify = MD5Util.getFileMD5(new File(myFile.getPhysicFileName()));
                 if(md5Verify!=null && md5Verify.equals(fileMd5)){
+                    FileUtil.chunkCount.remove(myFile.getMd5());
                     return "文件全部上传完成";
                 }
-                //return
-            }else{
-                chunkSet.add(chunk);
-                myFile.setUploadDt(new Date());
-                myFile.setFileStatus(MyFile.UPLOADING);
-                fileDao.updateUploadStatus(fileMd5, myFile);
             }
+            chunkSet.add(chunk);
+            myFile.setUploadDt(new Date());
+            myFile.setFileStatus(MyFile.UPLOADING);
+            fileDao.updateUploadStatus(fileMd5, myFile);
 
         } catch (IOException e) {
             e.printStackTrace();
-            return "uploadBlock error";
+            return "上传 块"+chunk+" 出错";
         }
-        return "uploadBlock suceess";
+        return "上传 块"+chunk+" 成功";
     }
 
     public static void main(String[] args) throws IOException {
+        short a=1+1;
+        byte b=127;
         useRandomAccessFile();
     }
 
@@ -94,6 +92,9 @@ public class FileServiceImpl implements FileService {
         }
         String fileMD5 = MD5Util.getFileMD5(file);
         System.out.println(fileMD5.length()+"::"+fileMD5);
+        Integer.valueOf("");
+        new HashMap().v;
+        Integer.parseInt("");
 
     }
 }

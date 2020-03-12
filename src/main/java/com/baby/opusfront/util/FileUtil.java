@@ -18,6 +18,7 @@ public class FileUtil {
     public static Map<String, Set<Integer>> chunkCount = new HashMap<>();
 
     public static String generatePath(String fileMd5, String rootPath, int pathLevel) {
+        // 使用多级目录存放文件，防止某个文件夹下文件数过多，造成文件系统响应缓慢
         StringBuilder resPath = new StringBuilder();
         //每级最多有16*16=256个目录
         //三级： 总共有 256*256*256个目录
